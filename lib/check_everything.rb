@@ -1,4 +1,4 @@
-class WebOpener
+class CheckEverything
   KNOWN_TAGS = {
     :help => ['-h','--help'],
     :links => ['-l','--links'],
