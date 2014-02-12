@@ -1,12 +1,10 @@
-require 'pry'
-require 'awesome_print'
-
 class WebOpener
   KNOWN_TAGS = {
     :help => ['-h','--help'],
     :links => ['-l','--links'],
     :all => ['-a', '--all']
   }
+  LINKFILE = File.dirname(__FILE__) + '/check_everything/links.txt'
 
   def run
     @argv = ARGV.map(&:downcase)
@@ -29,7 +27,7 @@ class WebOpener
 
     # Edit the tags and links.
     elsif @argv.any? {|arg| KNOWN_TAGS[:links].include?(arg)}
-      system("open links.txt")
+      system("open #{LINKFILE}")
     
     # Open up the websites!
     else
@@ -80,7 +78,7 @@ class WebOpener
   end
 
   def extract_links
-    link_file = read_file('links.txt').split("\n")
+    link_file = read_file(LINKFILE).split("\n")
     cur_tags = []
     
     @links = {}
@@ -117,7 +115,6 @@ class WebOpener
       [line]
     end
   end
-
 end
 
 WebOpener.new.run
