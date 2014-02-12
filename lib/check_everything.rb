@@ -6,7 +6,7 @@ class WebOpener
   }
   LINKFILE = File.dirname(__FILE__) + '/check_everything/links.txt'
 
-  def run
+  def self.run
     @argv = ARGV.map(&:downcase)
     extract_links
 
@@ -36,12 +36,12 @@ class WebOpener
   end
   
   private
-  def help
+  def self.help
     puts "\n'check_everything' will open all sites labeled with the 'default' tag."
     puts
     puts "Available tags:"
     puts "   -h, --help                 display the help message"
-    puts "   -t, --tags,                view/edit links and tags"
+    puts "   -l, --links,               view/edit links and tags"
     puts "   -a, --all                  open all websites"
     puts "   <tags>                     open a specific site group"
     puts
@@ -49,7 +49,7 @@ class WebOpener
     puts
   end
 
-  def open
+  def self.open
     @argv << "default" if @argv.empty?
     
     # If -a or --all is specified, select all links.  Otherwise, select specified
@@ -70,14 +70,14 @@ class WebOpener
       "Enter 'check_everything --links' for details.\n" if ARGV.empty?
   end
 
-  def read_file(file_name)
+  def self.read_file(file_name)
     file = File.open(file_name, "r")
     data = file.read
     file.close
     data
   end
 
-  def extract_links
+  def self.extract_links
     link_file = read_file(LINKFILE).split("\n")
     cur_tags = []
     
@@ -96,7 +96,7 @@ class WebOpener
   end
 
   # Recursive helper method for extract_links
-  def add_tag(line)
+  def self.add_tag(line)
     line.downcase!
     # Add multiple tags, if separated by semicolons.
     if line.include?(";")

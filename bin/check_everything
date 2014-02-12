@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
-require '../lib/check_everything.rb'
+require File.dirname(__FILE__) + '/../lib/check_everything.rb'
 
-WebOpener.new.run
+WebOpener.run
