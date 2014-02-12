@@ -116,5 +116,3 @@ class WebOpener
     end
   end
 end
-
-WebOpener.new.run

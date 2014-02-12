@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require '../lib/check_everything.rb'
+
+WebOpener.new.run
