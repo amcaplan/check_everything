@@ -4,57 +4,72 @@ require 'awesome_print'
 class WebOpener
   KNOWN_TAGS = {
     :help => ['-h','--help'],
-    :tags => ['-t','--tags', '-l','--links'],
+    :links => ['-l','--links'],
     :all => ['-a', '--all']
   }
 
   def run
-    ARGV.map(&:downcase)
-    
+    @argv = ARGV.map(&:downcase)
+    extract_links
+
     # First check for unknown arguments and print out a helpful message.
-    unmatched_args = ARGV.select{ |arg| !KNOWN_TAGS.values.flatten.include?(arg)}
+    known_tags = KNOWN_TAGS.values.flatten + @links.keys
+    unmatched_args = @argv.select{ |arg| !known_tags.include?(arg)}
     if !unmatched_args.empty?
-      puts "\nUnknown option#{ARGV.size > 1 ? "s" : nil}: " +
+      puts "\nUnknown option#{@argv.size > 1 ? "s" : nil}: " +
         "#{unmatched_args.join(" ")}"
-      puts "usage: check_everything [-h] [--help] [-t] [--tags] [-l] [--links] [<tags>]"
-      puts
+      print "usage: check_everything"
+      KNOWN_TAGS.values.flatten.each {|tag| print " [#{tag}]"}
+      puts "\n\nHint: Enter 'check_everything --help' to see the options!"
+      puts "\n"
     
     # Print out a help message.
-    elsif ARGV.any? {|arg| KNOWN_TAGS[:help].include?(arg.downcase)}
+    elsif @argv.any? {|arg| KNOWN_TAGS[:help].include?(arg)}
       help
 
     # Edit the tags and links.
-    elsif ARGV.any? {|arg| KNOWN_TAGS[:tags].include?(arg.downcase)}
+    elsif @argv.any? {|arg| KNOWN_TAGS[:links].include?(arg)}
       system("open links.txt")
     
     # Open up the websites!
     else
-      extract_links
       open
     end
   end
-
-  def test_open
-    open
-  end
-
+  
   private
   def help
-    puts "\n'check_everything' will open all sites."
+    puts "\n'check_everything' will open all sites labeled with the 'default' tag."
     puts
     puts "Available tags:"
     puts "   -h, --help                 display the help message"
-    puts "   -t, -l, --tags, --links    view/edit links and tags"
+    puts "   -t, --tags,                view/edit links and tags"
+    puts "   -a, --all                  open all websites"
     puts "   <tags>                     open a specific site group"
+    puts
+    puts "Note: The first tag in this list will be the only tag evaluated."
     puts
   end
 
   def open
-    @links.each {|link| system("open #{link}")}
+    @argv << "default" if @argv.empty?
+    
+    # If -a or --all is specified, select all links.  Otherwise, select specified
+    # links, or the default links if none are specified.
+    if @argv.any?{|arg| KNOWN_TAGS[:all].include?(arg)}
+      links = @links.values.flatten.uniq
+    else
+      links = @argv.map{|tag| @links[tag]}.flatten.compact.uniq
+    end
 
-    puts "It's been a pleasure serving you your favorite websites!"
-    puts "Did you know you can use tags to serve specific site groups? " +
-      "Type 'check_everything help' for details." if ARGV.empty?
+    links.each do |url|
+      url = "http://" << url if !url.start_with?("http")
+      system("open #{url}")
+    end
+
+    puts "\nIt's been a pleasure serving up your favorite websites!"
+    puts "Did you know you can use categories to open specific site groups? " +
+      "Enter 'check_everything --links' for details.\n" if ARGV.empty?
   end
 
   def read_file(file_name)
@@ -76,13 +91,13 @@ class WebOpener
       elsif line.start_with?("--")
         # add links to each relevant tag in @links
         cur_tags.each { |tag|
-          @links[tag] << line[2..-1]
+          @links[tag] << line[2..-1].strip
         }
       end
     end
   end
 
-  # Helpful recursive method for extract_links
+  # Recursive helper method for extract_links
   def add_tag(line)
     line.downcase!
     # Add multiple tags, if separated by semicolons.
@@ -91,14 +106,18 @@ class WebOpener
         add_tag(tag.strip)
       end
     else
-      @links[line] ||= []
-      tag_space_message = "You have a tag with a space in it; please fix by entering" +
-        "'check_everything -t' into your command line."
+      # Raise an error if there is an invalid tag.
+      tag_space_message = "Your link file includes a tag with a space in it; " +
+        "please fix by entering 'check_everything -t' into your command line."
+      has_dash_message = "Your linke file includes a tag with a dash, which is " +
+        "not allowed; please fix by entering 'check_everything -t' into your command line."
       raise tag_space_message if line.match(/ /)
+      raise has_dash_message if line.match(/-/)
+      @links[line] ||= []
       [line]
     end
   end
 
 end
 
-ap WebOpener.new.run
+WebOpener.new.run
