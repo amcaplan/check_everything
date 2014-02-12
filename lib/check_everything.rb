@@ -5,9 +5,13 @@ class WebOpener
     :categories => ['-c', '--categories'],
     :all => ['-a', '--all']
   }
-  LINKFILE = File.dirname(__FILE__) + '/check_everything/links.txt'
+  LINKFILE = "#{File.expand_path('~')}/.check_everything_links"
 
   def self.run
+    # Create a new link file if none has been created yet
+    unless File.exists?(LINKFILE)
+      system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
+    end
     # Assume no problems with the link file.
     @link_space, @link_dash = false, false
 
