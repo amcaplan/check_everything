@@ -1,0 +1,44 @@
+This file contains your favorite websites!  I've included some samples,
+but you should change this and make it your own.
+
+Tags start with "&&" whereas websites are prefaced with "--".  For your
+convenience, tags are case-insensitive, as I have illustrated.  Each
+website must have its own line.
+
+You can use multiple tags separated by semicolons (;) to assign websites
+to multiple groups.  Anything marked with the "default" tag will open if
+no tags are specified.  In the sample list, the program will by default
+open the "NEWS" and "EMAIL" groups.
+
+Put your websites down here (and don't mess with the line!):
+
+=======================================================================
+
+&& NEWS;DEFAULT
+--www.news.google.com
+--http://nytimes.com
+--www.reuters.com/news/oddlyEnough
+
+&& comics
+--www.xkcd.com
+--http://phdcomics.com
+
+&&   Blogs
+--amcaplan.blogspot.com
+--www.amcaplan.github.io
+
+&& PreTtY_PictUrEs
+--http://inspire.2ia.pl/random
+--http://www.1designperday.com/
+
+&& twit_feeds
+--http://twitter.com/amcaplan
+--twitter.com/nasa
+--https://twitter.com/WhatsTrending
+
+&& SOCIAL; defauLt
+--facebook.com
+--twitter.com
+
+&&EMAIL ;DefauLT
+--gmail.com
