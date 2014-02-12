@@ -36,10 +36,10 @@ class WebOpener
     # Check for errors; don't allow the user to see bad categories or open up
     # websites if the categories are not formatted properly.
     elsif @link_space
-        puts "Your link file includes a link with a space in it; " +
+        puts "Your link file includes a category with a space in it; " +
           "please fix by entering 'check_everything -l' into your command line."
     elsif @link_dash
-        puts "Your link file includes a tag with a dash, which is " +
+        puts "Your link file includes a category with a dash, which is " +
           "not allowed; please fix by entering 'check_everything -l' into your command line."
 
     # View the categories the user has defined.
