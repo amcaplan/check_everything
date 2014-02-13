@@ -25,7 +25,7 @@ will be evaluated):
 ### Configure
 
 Input your URLs and customize your categories! Input 'check_everything -l' and
-check out the instructions in the test file.
+check out the instructions in the configuration file.
 
 ### Enjoy!
 
