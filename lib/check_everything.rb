@@ -61,11 +61,12 @@ class CheckEverything
     puts "\n'check_everything' will open all sites labeled with the 'default' tag."
     puts
     puts "Available tags:"
-    puts "   -h, --help                 display the help message"
-    puts "   -l, --links,               view/edit links and categories"
-    puts "   -c, --categories           view the currently defined categories"
-    puts "   -a, --all                  open all websites"
-    puts "   <tags>                     open a specific site group"
+    puts "   -h, --help           display the help message"
+    puts "   -l, --links,         view/edit links and categories"
+    puts "   -c, --categories     view the currently defined categories"
+    puts "   -a, --all            open all websites"
+    puts "   <tags>               open a specific site group"
+    puts "                        (multiple are allowed, separated by spaces)"
     puts
     puts "Note: The first tag in this list will be the only tag evaluated."
     puts
