@@ -16,12 +16,13 @@ will be evaluated):
 
 |   Tag |  Result   |
 |-----|-----|
-|  \-h, \-\-help         | display the help message             |
-|  \-l, \-\-links        | view/edit links and categories       |
-|  \-r, \-\-ruby        | install Ruby Documentation functionality  |
-|  \-c, \-\-categories  | view the currently defined categories|
-|  \-a, \-\-all          | open all websites                    |
-|  &#60;category&#62;           | open a specific site group           |
+|  \-h, \-\-help         | display the help message                          |
+|  \-l, \-\-links        | view/edit links and categories                    |
+|  \-r, \-\-ruby         | install Ruby Documentation functionality          |
+|  \-c, \-\-categories   | view the currently defined categories             |
+|  \-a, \-\-all          | open all websites                                 |
+|  &#60;category&#62;    | open a specific site group                        |
+|  &#60;Ruby class&#62;  | open Ruby documentation (if feature is installed) |
 
 
 ### Configure
