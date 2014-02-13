@@ -19,7 +19,7 @@ class CheckEverything
         "the link file."
     end
     # Assume no problems with the link file.
-    @link_space, @link_dash = false, false
+    @category_space, @category_dash = false, false
 
     extract_links
 
@@ -44,10 +44,10 @@ class CheckEverything
     
     # Check for errors; don't allow the user to see bad categories or open up
     # websites if the categories are not formatted properly.
-    elsif @link_space
+    elsif @category_space
         puts "Your link file includes a category with a space in it; " +
           "please fix by entering 'check_everything -l' into your command line."
-    elsif @link_dash
+    elsif @category_dash
         puts "Your link file includes a category with a dash, which is " +
           "not allowed; please fix by entering 'check_everything -l' into your command line."
 
@@ -118,7 +118,7 @@ class CheckEverything
     link_file.each do |line|
       if line.start_with?("&&")
         # add tags as keys in @links, and assign to cur_tags
-        cur_tags = add_tag(line[2..-1].strip).flatten
+        cur_tags = add_category(line[2..-1].strip).flatten
       elsif line.start_with?("--")
         # add links to each relevant tag in @links
         cur_tags.each { |tag|
@@ -129,17 +129,17 @@ class CheckEverything
   end
 
   # Recursive helper method for extract_links
-  def self.add_tag(line)
+  def self.add_category(line)
     line.downcase!
     # Add multiple tags, if separated by semicolons.
     if line.include?(";")
       line.split(";").map(&:strip).each do |tag|
-        add_tag(tag.strip)
+        add_category(tag.strip)
       end
     else
-      # Note to raise an error if there is an invalid link.
-      @link_space = true if line.match(/ /)
-      @link_dash = true if line.match(/-/)
+      # Note to raise an error if there is an invalid category.
+      @category_space = true if line.match(/ /)
+      @category_dash = true if line.match(/-/)
       @links[line] ||= []
       [line]
     end
