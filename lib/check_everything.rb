@@ -118,6 +118,7 @@ class CheckEverything
     ruby_doc = Nokogiri::HTML(open("http://ruby-doc.org/core/"))
     class_names = []
     ruby_doc.css("p.class a").each{|class_name| class_names << class_name.text}
+    ruby_doc.css("p.module a").each{|module_name| class_names << module_name.text}
     class_names.map!{|class_name| class_name.gsub(/::/,"/")}
 
     system("touch #{File.dirname(__FILE__)}/ruby_doc")
