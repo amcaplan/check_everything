@@ -1,19 +1,34 @@
+require 'open-uri'
+require 'nokogiri'
+
 class CheckEverything
   KNOWN_TAGS = {
     :help => ['-h','--help'],
     :links => ['-l','--links'],
+    :ruby => ['-r','--ruby'],
     :categories => ['-c', '--categories'],
     :all => ['-a', '--all']
   }
-  LINKFILE = "#{File.expand_path('~')}/.check_everything_links"
+  LINKPATH = "#{File.expand_path('~')}/.check_everything_links"
+  LINKFILE = "#{LINKPATH}/links.txt"
+  RUBYFILE = "#{LINKPATH}/ruby.txt"
 
   def self.run
     @argv = ARGV.map(&:downcase)
+    until ARGV.empty?
+      ARGV.pop
+    end
+    # Only assemble Ruby development library if requested to.
+    @ruby_dev_assemble = false
     # Create a new link file if none has been created yet
     unless File.exists?(LINKFILE)
+      system("mkdir #{LINKPATH}")
       system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
       @argv = ["-l"]
-      puts "Please customize your installation.",
+      print "Are you a Ruby Dev who will want documentation-checking ",
+        "functionality? [Y/n] "
+      @ruby_dev_assemble = true unless gets.strip.downcase == 'n'
+      puts "\nPlease customize your installation.",
         "This message will only be shown once.",
         "To open again and customize, just enter 'check_everything -l' to open",
         "the link file."
@@ -24,8 +39,10 @@ class CheckEverything
     extract_links
 
     # First check for unknown arguments and print out a helpful message.
-    known_tags = KNOWN_TAGS.values.flatten + @links.keys
-    unmatched_args = @argv.select{ |arg| !known_tags.include?(arg)}
+    known_tags = KNOWN_TAGS.values.flatten + @links.keys + @ruby_links
+    unmatched_args = @argv.select do |arg|
+      !known_tags.any?{|known_tag| known_tag.downcase == arg.downcase}
+    end
     if !unmatched_args.empty?
       puts "\nUnknown option#{@argv.size > 1 ? "s" : nil}: " +
         "#{unmatched_args.join(" ")}"
@@ -40,8 +57,14 @@ class CheckEverything
 
     # Edit the tags and links.
     elsif @argv.any? {|arg| KNOWN_TAGS[:links].include?(arg)}
+      # If asked to build the Ruby Dev file, build it!
+      assemble_ruby_docs_file if @ruby_dev_assemble
+
       system("open #{LINKFILE}")
     
+    elsif @argv.any? {|arg| KNOWN_TAGS[:ruby].include?(arg)}
+      assemble_ruby_docs_file
+
     # Check for errors; don't allow the user to see bad categories or open up
     # websites if the categories are not formatted properly.
     elsif @category_space
@@ -57,7 +80,7 @@ class CheckEverything
     
     # Open up the websites!
     else
-      open
+      open_links
     end
   end
   
@@ -67,9 +90,10 @@ class CheckEverything
     puts
     puts "Available tags:"
     puts "   -h, --help           display the help message"
-    puts "   -l, --links,         view/edit links and categories"
+    puts "   -l, --links          view/edit links and categories"
+    puts "   -r, --ruby           install Ruby Documentation functionality"
     puts "   -c, --categories     view the currently defined categories"
-    puts "   -a, --all            open all websites"
+    puts "   -a, --all            open all websites (will override documentation lookup)"
     puts "   <tags>               open a specific site group"
     puts "                        (multiple are allowed, separated by spaces)"
     puts
@@ -82,7 +106,20 @@ class CheckEverything
     @links.keys.sort.each {|key| puts "  #{key}"}
   end
 
-  def self.open
+  def self.assemble_ruby_docs_file
+    ruby_doc = Nokogiri::HTML(open("http://ruby-doc.org/core/"))
+    class_names = []
+    ruby_doc.css("p.class a").each{|class_name| class_names << class_name.text}
+    class_names.map!{|class_name| class_name.gsub(/::/,"/")}
+
+    system("touch #{File.dirname(__FILE__)}/ruby_doc")
+    File.open("#{File.dirname(__FILE__)}/ruby_doc", 'w') { |f|
+      f.print class_names.join("\n")
+    }
+    system("cp #{File.dirname(__FILE__)}/ruby_doc #{RUBYFILE}")
+  end
+
+  def self.open_links
     @argv << "default" if @argv.empty?
     
     # If -a or --all is specified, select all links.  Otherwise, select specified
@@ -90,7 +127,17 @@ class CheckEverything
     if @argv.any?{|arg| KNOWN_TAGS[:all].include?(arg)}
       links = @links.values.flatten.uniq
     else
-      links = @argv.map{|tag| @links[tag]}.flatten.compact.uniq
+      links = @argv.map{|category| @links[category]}.flatten.compact.uniq
+      # If a Ruby class name has been specified, open documentation for that class.
+      if File.exists?(RUBYFILE)
+        classes = read_file(RUBYFILE).split
+        class_matches = classes.map { |class_name|
+          class_name if @argv.any? {|name| class_name.downcase == name.downcase}
+        }.compact
+        if class_matches.size > 0
+          class_matches.each {|link| links << "ruby-doc.org/core/#{link}.html"}
+        end
+      end
     end
 
     links.each do |url|
@@ -98,7 +145,7 @@ class CheckEverything
       system("open #{url}")
     end
 
-    puts "\nIt's been a pleasure serving up your favorite websites!"
+    puts "\nIt's been a pleasure serving up your websites!"
     puts "Did you know you can use categories to open specific site groups? " +
       "Enter 'check_everything --links' for details.\n" if ARGV.empty?
   end
@@ -125,6 +172,12 @@ class CheckEverything
           @links[tag] << line[2..-1].strip
         }
       end
+    end
+
+    @ruby_links = []
+    if File.exists?(RUBYFILE)
+      classes = read_file(RUBYFILE).split
+      classes.each {|class_name| @ruby_links << class_name}
     end
   end
 
