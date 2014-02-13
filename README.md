@@ -1,6 +1,7 @@
 # check_everything
 
 ## Open frequently accessed websites from your command line, in one go!
+## Also includes the ability to find documentation for the Ruby core classes
 
 ### Install
 
@@ -17,6 +18,7 @@ will be evaluated):
 |-----|-----|
 |  \-h, \-\-help         | display the help message             |
 |  \-l, \-\-links        | view/edit links and categories       |
+|  \-r, \-\-ruby        | install Ruby Documentation functionality  |
 |  \-c, \-\-categories  | view the currently defined categories|
 |  \-a, \-\-all          | open all websites                    |
 |  &#60;category&#62;           | open a specific site group           |
@@ -24,8 +26,18 @@ will be evaluated):
 
 ### Configure
 
-Input your URLs and customize your categories! Input 'check_everything -l' and
-check out the instructions in the configuration file.
+On your first run, you will be asked to do 2 things:
+
+1. Choose whether to install Ruby Documentation lookup functionality. This will
+give you command-line access to Ruby Documentation for the Core classes. For
+example, to see documentation for array, type 'check_everything array'
+
+(You can always install this later with 'check_everything -r')
+
+2. Input your URLs and customize your categories! Check out the instructions in
+the configuration file.
+
+(Input 'check_everything -l' at any time to customize again.)
 
 ### Enjoy!
 
