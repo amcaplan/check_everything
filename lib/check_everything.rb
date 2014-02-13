@@ -21,9 +21,17 @@ class CheckEverything
     # Only assemble Ruby development library if requested to.
     @ruby_dev_assemble = false
     # Create a new link file if none has been created yet
-    unless File.exists?(LINKFILE)
-      system("mkdir #{LINKPATH}")
-      system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
+    if !File.exists?(LINKFILE)
+      # If a previous version created a file rather than a directory, move it into
+      # the new directory.
+      if File.exists?(LINKPATH)
+        system("mv #{LINKPATH} #{LINKPATH}2")
+        system("mkdir #{LINKPATH}")
+        system("mv #{LINKPATH}2 LINKFILE")
+      else
+        system("mkdir #{LINKPATH}")
+        system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
+      end
       @argv = ["-l"]
       print "Are you a Ruby Dev who will want documentation-checking ",
         "functionality? [Y/n] "
