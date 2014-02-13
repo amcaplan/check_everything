@@ -12,13 +12,13 @@ Type 'check_everything' into the command line to pull up the default URLs.
 
 You can add the following tags (listed in order of precedence):
 
----
-  -h, --help: display the help message
-  -l, --links: view/edit links and categories
-  -c, --categories: view the currently defined categories
-  -a, --all: open all websites
-  <category>: open a specific site group
----
+
+|  -h, --help        | display the help message             |
+|  -l, --links       | view/edit links and categories       |
+|  -c, --categories  | view the currently defined categories|
+|  -a, --all         | open all websites                    |
+|  <category\>        | open a specific site group           |
+
 
 ### Configure
 
