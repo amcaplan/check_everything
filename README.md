@@ -33,12 +33,8 @@ On your first run, you will be asked to do 2 things:
 give you command-line access to Ruby Documentation for the Core classes. For
 example, to see documentation for array, type 'check_everything array'
 
-(You can always install this later with 'check_everything -r')
-
 2. Input your URLs and customize your categories! Check out the instructions in
 the configuration file.
-
-(Input 'check_everything -l' at any time to customize again.)
 
 ### Enjoy!
 
