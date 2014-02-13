@@ -10,9 +10,10 @@ Type 'gem install check_everything' into the command line.
 
 Type 'check_everything' into the command line to pull up the default URLs.
 
-You can add the following tags (listed in order of precedence):
+You can add the following tags (listed in order of precedence; only the first
+will be evaluated):
 
-|    |     |
+|   Tag |  Result   |
 |-----|-----|
 |  \-h, \-\-help         | display the help message             |
 |  \-l, \-\-links        | view/edit links and categories       |
