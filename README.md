@@ -31,3 +31,5 @@ check out the instructions in the configuration file.
 
 If you have any comments or want to suggest improvements, please feel free to fork
 and submit a pull request.
+
+The latest version: [![Gem Version](https://badge.fury.io/rb/check_everything.png)](http://badge.fury.io/rb/check_everything)
