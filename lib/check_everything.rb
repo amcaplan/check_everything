@@ -102,7 +102,7 @@ class CheckEverything
     puts "   -r, --ruby           install Ruby Documentation functionality"
     puts "   -c, --categories     view the currently defined categories"
     puts "   -a, --all            open all websites (will override documentation lookup)"
-    puts "   <tags>               open a specific site group"
+    puts "   <categories>         open a specific site group"
     puts "                        (multiple are allowed, separated by spaces)"
     puts
     puts "Note: The first tag in this list will be the only tag evaluated."
@@ -144,7 +144,7 @@ class CheckEverything
           class_name if @argv.any? {|name| class_name.downcase == name.downcase}
         }.compact
         if class_matches.size > 0
-          class_matches.each {|link| links << "ruby-doc.org/core/#{link}.html"}
+          class_matches.each {|link| links << "ruby-doc.org/core-#{RUBY_VERSION}/#{link}.html"}
         end
       end
     end

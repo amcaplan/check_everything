@@ -30,8 +30,9 @@ will be evaluated):
 On your first run, you will be asked to do 2 things:
 
 1. Choose whether to install Ruby Documentation lookup functionality. This will
-give you command-line access to Ruby Documentation for the Core classes. For
-example, to see documentation for array, type `check_everything array`
+give you command-line access to the online Ruby Documentation for the Core classes
+for your currently running version of Ruby. For example, to see documentation for
+array, type `check_everything array`.
 
 2. Input your URLs and customize your categories! Check out the instructions in
 the configuration file.
