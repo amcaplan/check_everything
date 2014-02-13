@@ -1,7 +1,7 @@
 # check_everything
 
 ## Open frequently accessed websites from your command line, in one go!
-Also includes the ability to find documentation for the Ruby core classes
+####(Also includes the ability to find documentation for the Ruby core classes)
 
 ### Install
 
