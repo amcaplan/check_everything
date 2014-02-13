@@ -27,7 +27,7 @@ class CheckEverything
       if File.exists?(LINKPATH)
         system("mv #{LINKPATH} #{LINKPATH}2")
         system("mkdir #{LINKPATH}")
-        system("mv #{LINKPATH}2 LINKFILE")
+        system("mv #{LINKPATH}2 #{LINKFILE}")
       else
         system("mkdir #{LINKPATH}")
         system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")

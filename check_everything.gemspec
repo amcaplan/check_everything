@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name        = 'check_everything'
-  gem.version     = '0.2.4'
+  gem.version     = '0.2.5'
   gem.date        = '2014-02-12'
   gem.summary     = "Check Everything"
   gem.description = "Open Frequently Used Websites from the Command Line!"
@@ -11,8 +11,5 @@ Gem::Specification.new do |gem|
   gem.homepage    = 'http://rubygems.org/gems/check_everything'
   gem.license     = 'MIT'
   gem.extra_rdoc_files = ['README.md']
-  gem.add_runtime_dependency "nokogiri",
-    ["= 1.6.1"]
-  gem.add_development_dependency "nokogiri",
-    ["= 1.6.1"]
+  gem.add_runtime_dependency "nokogiri", '~> 1.6', '>= 1.6.1'
 end
