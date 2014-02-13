@@ -8,14 +8,19 @@ class CheckEverything
   LINKFILE = "#{File.expand_path('~')}/.check_everything_links"
 
   def self.run
+    @argv = ARGV.map(&:downcase)
     # Create a new link file if none has been created yet
     unless File.exists?(LINKFILE)
       system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
+      @argv = ["-l"]
+      puts "Please customize your installation.",
+        "This message will only be shown once.",
+        "To open again and customize, just enter 'check_everything -l' to open",
+        "the link file."
     end
     # Assume no problems with the link file.
     @link_space, @link_dash = false, false
 
-    @argv = ARGV.map(&:downcase)
     extract_links
 
     # First check for unknown arguments and print out a helpful message.
