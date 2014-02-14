@@ -10,6 +10,8 @@ Type `gem install check_everything` into the command line.
 ### Run
 
 Type `check_everything` into the command line to pull up the default URLs.
+Type `check_everything` followed by one or more categories to open specific
+groups of sites.
 
 You can add the following tags (listed in order of precedence; only the first
 will be evaluated):
@@ -24,6 +26,13 @@ will be evaluated):
 |  &#60;category&#62;    | open a specific site group                        |
 |  &#60;Ruby class&#62;  | open Ruby documentation (if feature is installed) |
 
+NOTE: in versions 0.3.0 and higher, you can check Ruby documentation in one of
+two ways:
+----
+1. `check_everything array` (for the [class](http://www.ruby-doc.org/core-2.1.0/Array.html))
+2. `check_everything array#slice` (for the
+[method](http://www.ruby-doc.org/core-2.1.0/Array.html#method-i-slice))
+----
 
 ### Configure
 
