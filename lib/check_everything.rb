@@ -12,6 +12,24 @@ class CheckEverything
   LINKPATH = "#{File.expand_path('~')}/.check_everything_links"
   LINKFILE = "#{LINKPATH}/links.txt"
   RUBYFILE = "#{LINKPATH}/ruby.txt"
+  SUB_CHARS = {
+    '?' => '-3F-',
+    '!' => '-21-',
+    '|' => '-7C-',
+    ']' => '-5D-',
+    '[' => '-5B-',
+    '=' => '-3D-',
+    '+' => '-2B-',
+    '-' => '-2D-',
+    '*' => '-2A-',
+    '/' => '-2F-',
+    '%' => '-25-',
+    '~' => '-7E-',
+    '<' => '-3C-',
+    '>' => '-3E-',
+    '&' => '-26-',
+    '@' => '-40-'
+  }
 
   def self.run
     @argv = ARGV.map(&:downcase)
@@ -49,7 +67,9 @@ class CheckEverything
     # First check for unknown arguments and print out a helpful message.
     known_tags = KNOWN_TAGS.values.flatten + @links.keys + @ruby_links
     unmatched_args = @argv.select do |arg|
-      !known_tags.any?{|known_tag| known_tag.downcase == arg.downcase}
+      !known_tags.any? do |known_tag|
+        known_tag.downcase == arg.split("#")[0]
+      end
     end
     if !unmatched_args.empty?
       puts "\nUnknown option#{@argv.size > 1 ? "s" : nil}: " +
@@ -136,27 +156,53 @@ class CheckEverything
     if @argv.any?{|arg| KNOWN_TAGS[:all].include?(arg)}
       links = @links.values.flatten.uniq
     else
+      # Get links for all recognized categories
       links = @argv.map{|category| @links[category]}.flatten.compact.uniq
       # If a Ruby class name has been specified, open documentation for that class.
-      if File.exists?(RUBYFILE)
-        classes = read_file(RUBYFILE).split
-        class_matches = classes.map { |class_name|
-          class_name if @argv.any? {|name| class_name.downcase == name.downcase}
-        }.compact
-        if class_matches.size > 0
-          class_matches.each {|link| links << "ruby-doc.org/core-#{RUBY_VERSION}/#{link}.html"}
-        end
-      end
+      links.concat(add_documentation_to_links)
     end
 
-    links.each do |url|
-      url = "http://" << url if !url.start_with?("http")
-      system("open #{url}")
-    end
+    urls = links.map { |url|
+      url.start_with?("http") ? url : url = "http://" << url
+    }.join(" ")
+    system("open #{urls}")
 
     puts "\nIt's been a pleasure serving up your websites!"
     puts "Did you know you can use categories to open specific site groups? " +
       "Enter 'check_everything --links' for details.\n" if ARGV.empty?
+  end
+
+  def self.add_documentation_to_links
+    [].tap do |links|
+      if File.exists?(RUBYFILE)
+        classes = read_file(RUBYFILE).split
+        
+        # Allow arguments of the form "array" or "array#collect"
+        class_argv = @argv.map {|arg| arg.split('#')}
+        class_matches = classes.map { |class_name|
+          class_argv.map { |name|
+            # If a match is found, return an array with either 1 element (class)
+            # or 2 elements (class and method)
+            if class_name.downcase == name[0]
+              [class_name, name[1]].compact
+            end
+          }.compact
+        }.reject(&:empty?).flatten(1)
+        
+        # If matches were found, serve them up!
+        if class_matches.size > 0
+          class_matches.each do |klass|
+            # Add a method name to the link only if one is specified.
+            method = klass[1] ? "#method-i-#{klass[1]}" : ""
+            method = method.gsub(/[#{SUB_CHARS.keys}\[\]]/,SUB_CHARS)
+            method = method.gsub('--','-')
+            method = method[0..-2] if method[-1] == '-'
+            method = method[1..-1] if method[0] == '-'
+            links << "ruby-doc.org/core-#{RUBY_VERSION}/#{klass[0]}.html#{method}"
+          end
+        end
+      end
+    end
   end
 
   def self.read_file(file_name)
@@ -207,3 +253,5 @@ class CheckEverything
     end
   end
 end
+
+CheckEverything.run
