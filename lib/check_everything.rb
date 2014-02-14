@@ -253,5 +253,3 @@ class CheckEverything
     end
   end
 end
-
-CheckEverything.run
