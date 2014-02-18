@@ -26,7 +26,7 @@ will be evaluated):
 |  &#60;category&#62;    | open a specific site group                        |
 |  &#60;Ruby class&#62;  | open Ruby documentation (if feature is installed) |
 
-NOTE: in versions 0.3.0 and higher, you can check Ruby documentation in one of
+NOTE: in versions 0.3 and higher, you can check Ruby documentation in one of
 two ways:
 ----
 1. `check_everything array` (for the [class](http://www.ruby-doc.org/core-2.1.0/Array.html))
