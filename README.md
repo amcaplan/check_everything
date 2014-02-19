@@ -33,6 +33,7 @@ NOTE: in versions 0.3.2 and higher, you can check Ruby documentation in one of t
 2. `check_everything array#slice` (for the
 [instance method](http://www.ruby-doc.org/core-2.1.0/Array.html#method-i-slice))
 3. `check_everything array::new` (for the [class method](http://www.ruby-doc.org/core-2.1.0/Array.html#method-c-new))
+
 ----
 
 ### Configure
