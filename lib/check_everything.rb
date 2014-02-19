@@ -16,7 +16,7 @@ class CheckEverything
     :ruby => {
       :position => 3,
       :flags => ['-r','--ruby'],
-      :description => 'install Ruby Documentation functionality'
+      :description => 'install/update Ruby Documentation functionality'
     },
     :categories => {
       :position => 4,
@@ -151,6 +151,9 @@ class CheckEverything
     end
     puts "   #{"<categories>".ljust(21)}open a specific site group"
     puts "                        (multiple are allowed, separated by spaces)"
+    if File.exists?(RUBYFILE)
+      puts "   #{"<Ruby classes>".ljust(21)}open specified Ruby documentation"
+    end
     puts "\nNote: The first flag in this list will be the only flag evaluated."
   end
 
