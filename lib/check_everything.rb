@@ -151,7 +151,7 @@ class CheckEverything
     end
     puts "   #{"<categories>".ljust(21)}open a specific site group"
     puts "                        (multiple are allowed, separated by spaces)"
-    if File.exists?(RUBYFILE)
+    if ruby_doc_installed?
       puts "   #{"<Ruby classes>".ljust(21)}open specified Ruby documentation"
     end
     puts "\nNote: The first flag in this list will be the only flag evaluated."
@@ -163,6 +163,7 @@ class CheckEverything
   end
 
   def self.assemble_ruby_docs_file
+    added_or_installed = ruby_doc_installed? ? "updated" : "installed"
     ruby_doc = Nokogiri::HTML(open("http://ruby-doc.org/core/"))
     class_names = []
     ruby_doc.css("p.class a").each{|class_name| class_names << class_name.text}
@@ -174,6 +175,7 @@ class CheckEverything
       f.print class_names.join("\n")
     }
     system("cp #{File.dirname(__FILE__)}/ruby_doc #{RUBYFILE}")
+    puts "Ruby documentation feature #{added_or_installed}!"
   end
 
   def self.open_links
@@ -216,7 +218,7 @@ class CheckEverything
 
   def self.add_documentation_to_links
     [].tap do |doc_links|
-      if File.exists?(RUBYFILE)
+      if ruby_doc_installed?
         classes = read_file(RUBYFILE).split
         
         # Allow arguments of the form "array" or "array#collect" or "array::new"
@@ -294,7 +296,7 @@ class CheckEverything
 
   def self.extract_ruby_links
     @ruby_links = []
-    if File.exists?(RUBYFILE)
+    if ruby_doc_installed?
       classes = read_file(RUBYFILE).split
       classes.each {|class_name| @ruby_links << class_name}
     end
@@ -305,5 +307,9 @@ class CheckEverything
     data = file.read
     file.close
     data
+  end
+
+  def self.ruby_doc_installed?
+    File.exists?(RUBYFILE)
   end
 end
