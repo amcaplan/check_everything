@@ -103,19 +103,19 @@ class CheckEverything
     else
       system("mkdir #{LINKPATH}")
       system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
-    end
 
-    # On first run, prompt to customize the installation.
-    @argv = ["-l"]
-    print "Greetings, new user!  You're almost ready to use check_everything!"
-    print "Are you a Ruby Dev who will want documentation-checking ",
-      "functionality? [Y/n] "
-    assemble_ruby_docs_file unless gets.strip.downcase == 'n'
-    puts "\nPlease customize your installation.",
-      "This message will only be shown once.",
-      "To open again and customize, just enter 'check_everything -l' to open",
-      "the link file."
-    puts "You may now use check_everything normally."
+      # On first run, prompt to customize the installation.
+      @argv = ["-l"]
+      print "Greetings, new user!  You're almost ready to use check_everything! "
+      print "Are you a Ruby Dev who will want documentation-checking ",
+        "functionality? [Y/n] "
+      assemble_ruby_docs_file unless gets.strip.downcase == 'n'
+      puts "\nPlease customize your installation.",
+        "This message will only be shown once.",
+        "To open again and customize, just enter 'check_everything -l' to open",
+        "the link file."
+      puts "You may now use check_everything normally."
+    end
   end
 
   def self.unknown_arguments
