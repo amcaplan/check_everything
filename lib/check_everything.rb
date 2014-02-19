@@ -2,12 +2,32 @@ require 'open-uri'
 require 'nokogiri'
 
 class CheckEverything
-  KNOWN_TAGS = {
-    :help => ['-h','--help'],
-    :links => ['-l','--links'],
-    :ruby => ['-r','--ruby'],
-    :categories => ['-c', '--categories'],
-    :all => ['-a', '--all']
+  KNOWN_FLAGS = {
+    :help => {
+      :position => 1,
+      :flags => ['-h','--help'],
+      :description => 'display the help message'
+    },
+    :links => {
+      :position => 2,
+      :flags => ['-l','--links'],
+      :description => 'view/edit links and categories'
+    },
+    :ruby => {
+      :position => 3,
+      :flags => ['-r','--ruby'],
+      :description => 'install Ruby Documentation functionality'
+    },
+    :categories => {
+      :position => 4,
+      :flags => ['-c', '--categories'],
+      :description => 'view the currently defined categories'
+    },
+    :all => {
+      :position => 5,
+      :flags => ['-a', '--all'],
+      :description => 'open all websites (will override documentation lookup)'
+    }
   }
   LINKPATH = "#{File.expand_path('~')}/.check_everything_links"
   LINKFILE = "#{LINKPATH}/links.txt"
@@ -33,100 +53,105 @@ class CheckEverything
 
   def self.run
     @argv = ARGV.map(&:downcase)
-    until ARGV.empty?
-      ARGV.pop
-    end
-    # Only assemble Ruby development library if requested to.
-    @ruby_dev_assemble = false
-    # Create a new link file if none has been created yet
-    if !File.exists?(LINKFILE)
-      # If a previous version created a file rather than a directory, move it into
-      # the new directory.
-      if File.exists?(LINKPATH)
-        system("mv #{LINKPATH} #{LINKPATH}2")
-        system("mkdir #{LINKPATH}")
-        system("mv #{LINKPATH}2 #{LINKFILE}")
-      else
-        system("mkdir #{LINKPATH}")
-        system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
-      end
-      @argv = ["-l"]
-      print "Are you a Ruby Dev who will want documentation-checking ",
-        "functionality? [Y/n] "
-      @ruby_dev_assemble = true unless gets.strip.downcase == 'n'
-      puts "\nPlease customize your installation.",
-        "This message will only be shown once.",
-        "To open again and customize, just enter 'check_everything -l' to open",
-        "the link file."
-    end
-    # Assume no problems with the link file.
-    @category_space, @category_dash = false, false
+    ARGV.clear # prevent ARGV from interfering with "gets" input.
+
+    # Run first-time options if check_everything hasn't been run yet.
+    customize_installation if !File.exists?(LINKFILE)
 
     extract_links
 
     # First check for unknown arguments and print out a helpful message.
-    known_tags = KNOWN_TAGS.values.flatten + @links.keys + @ruby_links
-    unmatched_args = @argv.select do |arg|
-      !known_tags.any? do |known_tag|
-        known_tag.downcase == arg.split("#")[0]
-      end
-    end
+    unmatched_args = unknown_arguments
     if !unmatched_args.empty?
-      puts "\nUnknown option#{@argv.size > 1 ? "s" : nil}: " +
-        "#{unmatched_args.join(" ")}"
-      print "usage: check_everything"
-      KNOWN_TAGS.values.flatten.each {|tag| print " [#{tag}]"}
-      puts "\n\nHint: Enter 'check_everything --help' to see the options!"
-      puts "\n"
+      puts_unmatched_error_message(unmatched_args)
     
-    # Print out a help message.
-    elsif @argv.any? {|arg| KNOWN_TAGS[:help].include?(arg)}
+    # Respond to flags.
+    elsif argv_requests?(:help)
       help
-
-    # Edit the tags and links.
-    elsif @argv.any? {|arg| KNOWN_TAGS[:links].include?(arg)}
-      # If asked to build the Ruby Dev file, build it!
-      assemble_ruby_docs_file if @ruby_dev_assemble
-
+    elsif argv_requests?(:links)
       system("open #{LINKFILE}")
-    
-    elsif @argv.any? {|arg| KNOWN_TAGS[:ruby].include?(arg)}
+    elsif argv_requests?(:ruby)
       assemble_ruby_docs_file
-
-    # Check for errors; don't allow the user to see bad categories or open up
-    # websites if the categories are not formatted properly.
-    elsif @category_space
-        puts "Your link file includes a category with a space in it; " +
-          "please fix by entering 'check_everything -l' into your command line."
-    elsif @category_dash
-        puts "Your link file includes a category with a dash, which is " +
-          "not allowed; please fix by entering 'check_everything -l' into your command line."
-
-    # View the categories the user has defined.
-    elsif @argv.any? {|arg| KNOWN_TAGS[:categories].include?(arg)}
-      view_categories
     
-    # Open up the websites!
+    # Block execution of final options if an invalid character exists
+    # in the user's link file.
+    elsif @invalid_char_in_links
+        puts "Your link file includes a category with a " +
+          "\"#{@invalid_char_in_links}\" character in it; please fix by " +
+          "entering 'check_everything -l' into your command line."
+    elsif argv_requests?(:categories)
+      view_categories
+    # If there are no flags, open the websites!
     else
       open_links
     end
   end
   
   private
+
+  def self.known_flags
+    KNOWN_FLAGS.values.map{|command| command[:flags]}.flatten
+  end
+
+  def self.customize_installation
+    # If a previous version created a file rather than a directory, move it into
+    # the new directory.
+    if File.exists?(LINKPATH)
+      system("mv #{LINKPATH} #{LINKPATH}99999999")
+      system("mkdir #{LINKPATH}")
+      system("mv #{LINKPATH}99999999 #{LINKFILE}")
+    else
+      system("mkdir #{LINKPATH}")
+      system("cp #{File.dirname(__FILE__)}/check_everything/links.txt #{LINKFILE}")
+    end
+
+    # On first run, prompt to customize the installation.
+    @argv = ["-l"]
+    print "Greetings, new user!  You're almost ready to use check_everything!"
+    print "Are you a Ruby Dev who will want documentation-checking ",
+      "functionality? [Y/n] "
+    assemble_ruby_docs_file unless gets.strip.downcase == 'n'
+    puts "\nPlease customize your installation.",
+      "This message will only be shown once.",
+      "To open again and customize, just enter 'check_everything -l' to open",
+      "the link file."
+    puts "You may now use check_everything normally."
+  end
+
+  def self.unknown_arguments
+    all_known_flags = known_flags + @links.keys + @ruby_links
+    @argv.select do |arg|
+      all_known_flags.none? do |known_flag|
+        known_flag.downcase == arg.split(/#|::/)[0]
+      end
+    end
+  end
+
+  def self.puts_unmatched_error_message(unmatched_args)
+    puts "\nUnknown option#{@argv.size > 1 ? "s" : nil}: " +
+        "#{unmatched_args.join(" ")}"
+    print "usage: check_everything"
+    known_flags.each {|flag| print " [#{flag}]"}
+    puts "\n\nHint: Enter 'check_everything --help' to see the options!"
+    puts "\n"
+  end
+
+  def self.argv_requests?(command)
+    @argv.any? {|arg| KNOWN_FLAGS[command][:flags].include?(arg)}
+  end
+
   def self.help
-    puts "\n'check_everything' will open all sites labeled with the 'default' tag."
+    puts "\n'check_everything' without flags will open all sites labeled " +
+      "with the 'default' category."
     puts
-    puts "Available tags:"
-    puts "   -h, --help           display the help message"
-    puts "   -l, --links          view/edit links and categories"
-    puts "   -r, --ruby           install Ruby Documentation functionality"
-    puts "   -c, --categories     view the currently defined categories"
-    puts "   -a, --all            open all websites (will override documentation lookup)"
-    puts "   <categories>         open a specific site group"
+    puts "Available flags:"
+    sorted_flags = KNOWN_FLAGS.sort_by{|command, details| details[:position]}
+    sorted_flags.each do |command, details|
+      puts "   #{details[:flags].join(", ").ljust(21)}#{details[:description]}"
+    end
+    puts "   #{"<categories>".ljust(21)}open a specific site group"
     puts "                        (multiple are allowed, separated by spaces)"
-    puts
-    puts "Note: The first tag in this list will be the only tag evaluated."
-    puts
+    puts "\nNote: The first flag in this list will be the only flag evaluated."
   end
 
   def self.view_categories
@@ -151,9 +176,7 @@ class CheckEverything
   def self.open_links
     @argv << "default" if @argv.empty?
     
-    # If -a or --all is specified, select all links.  Otherwise, select specified
-    # links, or the default links if none are specified.
-    if @argv.any?{|arg| KNOWN_TAGS[:all].include?(arg)}
+    if argv_requests?(:all)
       links = @links.values.flatten.uniq
     else
       # Get links for all recognized categories
@@ -162,46 +185,115 @@ class CheckEverything
       links.concat(add_documentation_to_links)
     end
 
-    urls = links.map { |url|
-      url.start_with?("http") ? url : url = "http://" << url
-    }.join(" ")
-    system("open #{urls}")
+    # Reject any empty strings ("--      " in the link file)
+    links.reject!{|link| link.strip.empty?}
+    links = add_http(links)
+    launch(links)
+  end
 
-    puts "\nIt's been a pleasure serving up your websites!"
-    puts "Did you know you can use categories to open specific site groups? " +
+  def self.add_http(links)
+    links.map { |url|
+      url.start_with?("http") ? "\"#{url}\"" : url = "\"#{"http://" << url}\""
+    }.join(" ")
+  end
+
+  def self.launch(urls)
+    if !urls.empty?
+      system("open #{urls}")
+
+      puts "\nIt's been a pleasure serving up your websites!"
+      puts "Did you know you can use categories to open specific site groups? " +
       "Enter 'check_everything --links' for details.\n" if ARGV.empty?
+    else
+      puts "You don't seem to have any links for \"#{@argv.join("\" or \"")}\" in " +
+        "your file.  Enter `check_everything -l` into your command line to " +
+        "add some links!"
+    end
   end
 
   def self.add_documentation_to_links
-    [].tap do |links|
+    [].tap do |doc_links|
       if File.exists?(RUBYFILE)
         classes = read_file(RUBYFILE).split
         
-        # Allow arguments of the form "array" or "array#collect"
-        class_argv = @argv.map {|arg| arg.split('#')}
+        # Allow arguments of the form "array" or "array#collect" or "array::new"
+        class_argv = @argv.map {|arg| arg.split(/#|:/)}
         class_matches = classes.map { |class_name|
           class_argv.map { |name|
-            # If a match is found, return an array with either 1 element (class)
-            # or 2 elements (class and method)
-            if class_name.downcase == name[0]
-              [class_name, name[1]].compact
-            end
+            # If a match is found, return an array with either 1 element (class) or
+            # 2 elements (class, instance method) or 3 elements (class, "", class method)
+            [class_name, name[1], name[2]] if class_name.downcase == name[0]
           }.compact
         }.reject(&:empty?).flatten(1)
         
         # If matches were found, serve them up!
-        if class_matches.size > 0
-          class_matches.each do |klass|
-            # Add a method name to the link only if one is specified.
-            method = klass[1] ? "#method-i-#{klass[1]}" : ""
-            method = method.gsub(/[#{SUB_CHARS.keys}\[\]]/,SUB_CHARS)
-            method = method.gsub('--','-')
-            method = method[0..-2] if method[-1] == '-'
-            method = method[1..-1] if method[0] == '-'
-            links << "ruby-doc.org/core-#{RUBY_VERSION}/#{klass[0]}.html#{method}"
-          end
+        class_matches.each do |klass|
+          # Add a method name to the link only if one is specified.
+          method = if klass[2]
+              # For class methods, use the class method link format.
+              "#method-c-#{klass[2]}"
+            elsif klass[1]
+              # For instance methods, use the instance method link format.
+              "#method-i-#{klass[1]}"
+            else
+              ""
+            end
+          # Create link path and remove extra dashes added
+          # in the process of replacing special characters.
+          method = method.gsub(/[#{SUB_CHARS.keys}\[\]]/,SUB_CHARS).gsub('--','-')
+          method = method[0..-2] if method[-1] == '-'
+          doc_links << "ruby-doc.org/core-#{RUBY_VERSION}/#{klass[0]}.html#{method}"
         end
       end
+    end
+  end
+
+  def self.extract_links
+    extract_links_from(read_file(LINKFILE).split("\n"))
+    extract_ruby_links
+  end
+
+  def self.extract_links_from(link_file)
+    current_categories = []
+    @links = {}
+    link_file.each do |line|
+      case line[0,2]
+      when "&&"
+        # add categories as keys in @links, and assign to current categories
+        current_categories = add_category(line[2..-1].strip)
+      when "--"
+        # add links to each relevant categories in @links
+        current_categories.each { |category|
+          @links[category] << line[2..-1].strip
+        }
+      end
+    end
+  end
+
+  def self.add_category(line)
+    line.downcase!
+    # Add multiple categories, if separated by semicolons.
+    if line.include?(";")
+      line.split(";").map(&:strip).each do |category|
+        add_category(category.strip)
+      end
+    else
+      # Note to raise an error if there is an invalid category.
+      invalid_char = line.match(/[ \-#:\/]/)
+      if invalid_char
+        @invalid_char_in_links = invalid_char.to_a[0] if invalid_char
+      end
+      # Optionally instantiate an array for the category if it doesn't exist yet.
+      @links[line] ||= []
+      [line]
+    end
+  end
+
+  def self.extract_ruby_links
+    @ruby_links = []
+    if File.exists?(RUBYFILE)
+      classes = read_file(RUBYFILE).split
+      classes.each {|class_name| @ruby_links << class_name}
     end
   end
 
@@ -210,46 +302,5 @@ class CheckEverything
     data = file.read
     file.close
     data
-  end
-
-  def self.extract_links
-    link_file = read_file(LINKFILE).split("\n")
-    cur_tags = []
-    
-    @links = {}
-    link_file.each do |line|
-      if line.start_with?("&&")
-        # add tags as keys in @links, and assign to cur_tags
-        cur_tags = add_category(line[2..-1].strip).flatten
-      elsif line.start_with?("--")
-        # add links to each relevant tag in @links
-        cur_tags.each { |tag|
-          @links[tag] << line[2..-1].strip
-        }
-      end
-    end
-
-    @ruby_links = []
-    if File.exists?(RUBYFILE)
-      classes = read_file(RUBYFILE).split
-      classes.each {|class_name| @ruby_links << class_name}
-    end
-  end
-
-  # Recursive helper method for extract_links
-  def self.add_category(line)
-    line.downcase!
-    # Add multiple tags, if separated by semicolons.
-    if line.include?(";")
-      line.split(";").map(&:strip).each do |tag|
-        add_category(tag.strip)
-      end
-    else
-      # Note to raise an error if there is an invalid category.
-      @category_space = true if line.match(/ /)
-      @category_dash = true if line.match(/-/)
-      @links[line] ||= []
-      [line]
-    end
   end
 end

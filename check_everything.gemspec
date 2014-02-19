@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name        = 'check_everything'
-  gem.version     = '0.3.1'
+  gem.version     = '0.3.2'
   gem.date        = '2014-02-12'
   gem.summary     = "Check Everything"
   gem.description = "Open Frequently Used Websites from the Command Line!"
